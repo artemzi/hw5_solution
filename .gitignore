@@ -1,0 +1,5 @@
+example/*
+codegen
+api_handlers.go
+*.md
+*.pdf
