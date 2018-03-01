@@ -19,7 +19,6 @@ import (
 	"net/http"
 	"encoding/json"
 	"fmt"
-	// "io/ioutil"
 )
 `))
 
@@ -98,7 +97,7 @@ func main() {
 	dest := strings.ToLower(os.Args[2]) // here we can change filename or add some check&whatever
 	out, _ := os.Create(dest)
 
-	tplHeader.Execute(out, structTpl{Package: node.Name.Name}) // add package decklarations and imports
+	tplHeader.Execute(out, structTpl{Package: node.Name.Name}) // add package declarations and imports
 	for _, n := range node.Decls {
 		currFunc, ok := n.(*ast.FuncDecl)
 		if !ok {
