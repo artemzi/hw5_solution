@@ -18,8 +18,8 @@ var (
 import (
 	"net/http"
 	"encoding/json"
-	"log"
-	"io/ioutil"
+	"fmt"
+	// "io/ioutil"
 )
 `))
 
@@ -40,28 +40,23 @@ func (api *{{.StructName}}) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	caseTemplate = template.Must(template.New("caseTemplate").Parse(`
 	case "{{.Path}}":
-		handler{{.Handler}}(w, r)
+		api.handler{{.Handler}}(w, r)
 `))
 
 	handlerTemplate = template.Must(template.New("handlerTemplate").Parse(`
-func handlerCreate(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Printf("Error reading body: %v", err)
-		http.Error(w, "can't read body", http.StatusBadRequest)
-		return
+func (api *{{.StructName}}) handler{{.Method}}(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "GET":
+		data := r.URL.Query()
+		fmt.Printf("{{.StructName}} GET %v\n", data)
+	case "POST":
+		err := r.ParseForm()
+		if err != nil {
+			panic(err)
+		}
+		data := r.Form
+		fmt.Printf("{{.StructName}} POST %v\n", data)
 	}
-	log.Printf("handlerCreate body: %v\n", string(body))
-}
-
-func handlerProfile(w http.ResponseWriter, r *http.Request) {
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Printf("Error reading body: %v", err)
-		http.Error(w, "can't read body", http.StatusBadRequest)
-		return
-	}
-	log.Printf("handlerProfile body: %v\n", string(body))
 }
 `))
 )
@@ -141,12 +136,12 @@ func main() {
 		for _, c := range cases {
 			if c.Struct == s {
 				caseTemplate.Execute(output, c)
+				handlerTemplate.Execute(out, structTpl{StructName: s, Method: c.Handler})
 			}
 		}
 		tpl.Execute(out, structTpl{StructName: s, Cases: output.String()})
 		output = new(bytes.Buffer)
 	}
-	handlerTemplate.Execute(out, nil)
 	out.Close()
 }
 
